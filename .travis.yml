@@ -15,4 +15,5 @@ before_install:
         hg checkout $VIM;
       fi
     - ./configure --with-futures=huge && make && sudo make install
+    - cd $TRAVIS_BUILD_DIR
 script: rake ci
