@@ -1,6 +1,6 @@
-filetype indent off
+filetype plugin indent off
 set runtimepath+=./.vim-test/vital.vim/
-filetype indent on
+filetype plugin indent on
 
 runtime plugin/*.vim
 
