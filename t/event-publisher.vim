@@ -55,19 +55,19 @@ describe 'Event.{Publisher,Subscriber}'
         Expect a:000 ==# []
       endfunction
 
-      call publisher.subscribe('with/no-args', subscriber.wrap(function('<SID>first')))
+      call publisher.subscribe('with/no-args', subscriber.wrap(function('s:first')))
 
       function! s:second(...)
         Expect a:000 ==# [1]
       endfunction
 
-      call publisher.subscribe('with/one-args', subscriber.wrap(function('<SID>second')))
+      call publisher.subscribe('with/one-args', subscriber.wrap(function('s:second')))
 
       function! s:third(...)
         Expect a:000 ==# [1, 2]
       endfunction
 
-      call publisher.subscribe('with/two-args', subscriber.wrap(function('<SID>third')))
+      call publisher.subscribe('with/two-args', subscriber.wrap(function('s:third')))
 
       call publisher.publish('with/no-args')
       call publisher.publish('with/one-args', 1)
@@ -86,13 +86,13 @@ describe 'Event.{Publisher,Subscriber}'
         throw 'success'
       endfunction
 
-      call publisher.subscribe('test1', subscriber.wrap(function('<SID>fail')))
-      call publisher.subscribe('test1', subscriber.wrap(function('<SID>success')))
-      call publisher.subscribe('test2', subscriber.wrap(function('<SID>fail')))
-      call publisher.subscribe('test2', subscriber.wrap(function('<SID>success')))
+      call publisher.subscribe('test1', subscriber.wrap(function('s:fail')))
+      call publisher.subscribe('test1', subscriber.wrap(function('s:success')))
+      call publisher.subscribe('test2', subscriber.wrap(function('s:fail')))
+      call publisher.subscribe('test2', subscriber.wrap(function('s:success')))
 
-      call publisher.unsubscribe('test1', subscriber.wrap(function('<SID>fail')))
-      call publisher.unsubscribe('test2', subscriber.wrap(function('<SID>fail')))
+      call publisher.unsubscribe('test1', subscriber.wrap(function('s:fail')))
+      call publisher.unsubscribe('test2', subscriber.wrap(function('s:fail')))
 
       Expect expr { publisher.publish('test1') } to_throw '^success$'
       Expect expr { publisher.publish('test2') } to_throw '^success$'
