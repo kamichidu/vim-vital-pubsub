@@ -6,7 +6,7 @@ env:
         # tag name except `latest'
         - VIM=latest
         - VIM=v7-4
-        - VIM=v7-3-002
+        # - VIM=v7-3-002
 before_install:
     - sudo apt-get install mercurial
     - hg clone https://code.google.com/p/vim/
