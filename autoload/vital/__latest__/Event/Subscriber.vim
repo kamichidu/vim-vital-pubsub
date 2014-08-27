@@ -2,8 +2,9 @@ let s:save_cpo= &cpo
 set cpo&vim
 
 let s:subscriber= {
-\ '__type': 0,
-\ '__expr': '',
+\ '__type':  0,
+\ '__expr':  '',
+\ '__event': '',
 \}
 
 function! s:_invoke_string(event) dict
@@ -12,7 +13,7 @@ function! s:_invoke_string(event) dict
 endfunction
 
 function! s:_invoke_dict(event) dict
-  call call(self.__expr.do, a:event.data, self)
+  call call(self.__expr[self.__event], a:event.data, self)
 endfunction
 
 function! s:_invoke_funcref(event) dict
@@ -23,25 +24,28 @@ function! s:subscriber.equals(subscriber)
   return (self.__type == a:subscriber.__type) && (self.__expr == a:subscriber.__expr)
 endfunction
 
-function! s:wrap(expr)
+function! s:wrap(event, expr)
   let subscriber= deepcopy(s:subscriber)
 
   if type(a:expr) == type('')
-    let subscriber.__type= type('')
-    let subscriber.__expr= a:expr
-    let subscriber.invoke= function('s:_invoke_string')
+    let subscriber.__type=  type('')
+    let subscriber.__expr=  a:expr
+    let subscriber.__event= a:event
+    let subscriber.invoke=  function('s:_invoke_string')
   elseif type(a:expr) == type({})
-    if !(has_key(a:expr, 'do') && type(a:expr.do) == type(function('tr')))
-      throw 'vital: Event.Subscriber: Illegal Subscriber object received'
+    if !has_key(a:expr, a:event)
+      throw printf("vital: Event.Subscriber: No such function `%s'", a:event)
     endif
 
-    let subscriber.__type= type({})
-    let subscriber.__expr= deepcopy(a:expr)
-    let subscriber.invoke= function('s:_invoke_dict')
+    let subscriber.__type=  type({})
+    let subscriber.__expr=  deepcopy(a:expr)
+    let subscriber.__event= a:event
+    let subscriber.invoke=  function('s:_invoke_dict')
   elseif type(a:expr) == type(function('tr'))
-    let subscriber.__type= type(function('tr'))
-    let subscriber.__expr= a:expr
-    let subscriber.invoke= function('s:_invoke_funcref')
+    let subscriber.__type=  type(function('tr'))
+    let subscriber.__expr=  a:expr
+    let subscriber.__event= a:event
+    let subscriber.invoke=  function('s:_invoke_funcref')
   else
     throw 'vital: Event.Subscriber: Unsupported subscriber type'
   endif

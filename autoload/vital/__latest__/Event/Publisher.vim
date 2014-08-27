@@ -5,18 +5,28 @@ let s:publisher= {
 \ '__subscribers': {},
 \}
 
-function! s:publisher.subscribe(event, subscriber)
+function! s:_vital_loaded(V)
+  let s:Sub= a:V.import('Event.Subscriber')
+endfunction
+
+function! s:_vital_depends()
+  return ['Event.Subscriber']
+endfunction
+
+function! s:publisher.subscribe(event, expr)
+  let subscriber= s:Sub.wrap(a:event, a:expr)
   let subscribers= get(self.__subscribers, a:event, [])
 
-  let subscribers+= [a:subscriber]
+  let subscribers+= [subscriber]
 
   let self.__subscribers[a:event]= subscribers
 endfunction
 
-function! s:publisher.unsubscribe(event, subscriber)
+function! s:publisher.unsubscribe(event, expr)
+  let subscriber= s:Sub.wrap(a:event, a:expr)
   let subscribers= get(self.__subscribers, a:event, [])
 
-  let self.__subscribers[a:event]= filter(subscribers, '!v:val.equals(a:subscriber)')
+  let self.__subscribers[a:event]= filter(subscribers, '!v:val.equals(subscriber)')
 endfunction
 
 function! s:publisher.publish(event, ...)

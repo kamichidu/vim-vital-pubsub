@@ -4,15 +4,14 @@ filetype plugin indent on
 
 runtime plugin/*.vim
 
-describe 'Event.{Publisher,Subscriber}'
+describe 'Event.Publisher'
   describe 'basic usage'
     it 'accepts string expression'
       let publisher= vital#of('vital').import('Event.Publisher').new()
-      let subscriber= vital#of('vital').import('Event.Subscriber')
 
-      call publisher.subscribe('with/no-args', subscriber.wrap('Expect v:val ==# []'))
-      call publisher.subscribe('with/one-args', subscriber.wrap('Expect v:val ==# [1]'))
-      call publisher.subscribe('with/two-args', subscriber.wrap('Expect v:val ==# [1, 2]'))
+      call publisher.subscribe('with/no-args',  'Expect v:val ==# []')
+      call publisher.subscribe('with/one-args', 'Expect v:val ==# [1]')
+      call publisher.subscribe('with/two-args', 'Expect v:val ==# [1, 2]')
 
       call publisher.publish('with/no-args')
       call publisher.publish('with/one-args', 1)
@@ -21,26 +20,27 @@ describe 'Event.{Publisher,Subscriber}'
 
     it 'accepts dictionary'
       let publisher= vital#of('vital').import('Event.Publisher').new()
-      let subscriber= vital#of('vital').import('Event.Subscriber')
 
       let handler= {}
       function! handler.do(...)
         Expect a:000 ==# []
       endfunction
-
-      call publisher.subscribe('with/no-args', subscriber.wrap(handler))
+      let handler['with/no-args']= handler.do
 
       function! handler.do(...)
         Expect a:000 ==# [1]
       endfunction
-
-      call publisher.subscribe('with/one-args', subscriber.wrap(handler))
+      let handler['with/one-args']= handler.do
 
       function! handler.do(...)
         Expect a:000 ==# [1, 2]
       endfunction
+      let handler['with/two-args']= handler.do
+      unlet handler.do
 
-      call publisher.subscribe('with/two-args', subscriber.wrap(handler))
+      call publisher.subscribe('with/no-args', handler)
+      call publisher.subscribe('with/one-args', handler)
+      call publisher.subscribe('with/two-args', handler)
 
       call publisher.publish('with/no-args')
       call publisher.publish('with/one-args', 1)
@@ -49,25 +49,24 @@ describe 'Event.{Publisher,Subscriber}'
 
     it 'accepts funcref'
       let publisher= vital#of('vital').import('Event.Publisher').new()
-      let subscriber= vital#of('vital').import('Event.Subscriber')
 
       function! s:first(...)
         Expect a:000 ==# []
       endfunction
 
-      call publisher.subscribe('with/no-args', subscriber.wrap(function('s:first')))
+      call publisher.subscribe('with/no-args', function('s:first'))
 
       function! s:second(...)
         Expect a:000 ==# [1]
       endfunction
 
-      call publisher.subscribe('with/one-args', subscriber.wrap(function('s:second')))
+      call publisher.subscribe('with/one-args', function('s:second'))
 
       function! s:third(...)
         Expect a:000 ==# [1, 2]
       endfunction
 
-      call publisher.subscribe('with/two-args', subscriber.wrap(function('s:third')))
+      call publisher.subscribe('with/two-args', function('s:third'))
 
       call publisher.publish('with/no-args')
       call publisher.publish('with/one-args', 1)
@@ -76,7 +75,6 @@ describe 'Event.{Publisher,Subscriber}'
 
     it 'unsubscribe'
       let publisher= vital#of('vital').import('Event.Publisher').new()
-      let subscriber= vital#of('vital').import('Event.Subscriber')
 
       function! s:fail()
         throw 'fail'
@@ -86,13 +84,13 @@ describe 'Event.{Publisher,Subscriber}'
         throw 'success'
       endfunction
 
-      call publisher.subscribe('test1', subscriber.wrap(function('s:fail')))
-      call publisher.subscribe('test1', subscriber.wrap(function('s:success')))
-      call publisher.subscribe('test2', subscriber.wrap(function('s:fail')))
-      call publisher.subscribe('test2', subscriber.wrap(function('s:success')))
+      call publisher.subscribe('test1', function('s:fail'))
+      call publisher.subscribe('test1', function('s:success'))
+      call publisher.subscribe('test2', function('s:fail'))
+      call publisher.subscribe('test2', function('s:success'))
 
-      call publisher.unsubscribe('test1', subscriber.wrap(function('s:fail')))
-      call publisher.unsubscribe('test2', subscriber.wrap(function('s:fail')))
+      call publisher.unsubscribe('test1', function('s:fail'))
+      call publisher.unsubscribe('test2', function('s:fail'))
 
       Expect expr { publisher.publish('test1') } to_throw '^success$'
       Expect expr { publisher.publish('test2') } to_throw '^success$'

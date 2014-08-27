@@ -22,7 +22,6 @@ Hot to Use
         ```vim:
         let s:V= vital#of('xxx')
         let s:Pub= s:V.import('Event.Publisher').new()
-        let s:Sub= s:V.import('Event.Subscriber')
         unlet s:V
 
         ...
@@ -40,10 +39,10 @@ Hot to Use
         ...
 
         function! xxx#subscribe(event, expr)
-            call s:Pub.subscribe(a:event, s:Sub.wrap(a:expr))
+            call s:Pub.subscribe(a:event, a:expr)
         endfunction
 
         function! xxx#unsubscribe(event, expr)
-            call s:Pub.unsubscribe(a:event, s:Sub.wrap(a:expr))
+            call s:Pub.unsubscribe(a:event, a:expr)
         endfunction
         ```
